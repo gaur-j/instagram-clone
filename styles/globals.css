@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Define your design tokens via @theme */
+@theme {
+  --ig-primary-background: 255, 255, 255;
+  --ig-secondary-background: 0, 0, 0;
+}
+
+/* Root-level default theme styles */
+:root {
+  background-color: rgb(var(--ig-primary-background));
+}
+
+/* Responsive to system dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: rgb(var(--ig-secondary-background));
+  }
+}
