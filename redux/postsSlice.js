@@ -28,7 +28,9 @@ export const publishPost = createAsyncThunk(
 export const fetchFeed = createAsyncThunk(
   "posts/fetchFeed",
   async ({ userId, following }) => {
-    return await getFeedPosts({ userId, following });
+    const posts = await getFeedPosts({ userId, following });
+    console.log("Fetched posts:", posts); // debug
+    return posts;
   }
 );
 
@@ -70,7 +72,7 @@ const postsSlice = createSlice({
       })
       .addCase(fetchFeed.fulfilled, (s, a) => {
         s.loading = false;
-        s.feed = a.payload;
+        s.feed = a.payload || [];
       })
       .addCase(fetchFeed.rejected, (s, a) => {
         s.loading = false;
