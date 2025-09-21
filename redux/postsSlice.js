@@ -2,80 +2,71 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   createPost,
   getFeedPosts,
-  toggleLike,
-  addComment,
-} from "@/lib/postService";
+  toggleLike as toggleLikeService,
+  addComment as addCommentService,
+} from "../lib/postService";
 
-export const fetchFeed = createAsyncThunk(
-  "posts/fetchFeed",
-  async ({ userId, following }, { rejectWithValue }) => {
-    try {
-      return await getFeedPosts({ userId, following });
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
-  }
-);
-
+// Publish new post
 export const publishPost = createAsyncThunk(
   "posts/publishPost",
-  async ({ userId, mediaUrl, mediaType, caption }, { rejectWithValue }) => {
-    try {
-      const id = await createPost({
-        userId,
-        mediaUrl,
-        mediaType,
-        caption,
-      });
-      return {
-        id,
-        userId,
-        mediaUrl,
-        mediaType,
-        caption,
-        likes: [],
-        comments: [],
-        createdAt: new Date().toISOString(),
-      };
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
+  async ({ userId, mediaUrl, mediaType, caption }) => {
+    const id = await createPost({ userId, mediaUrl, mediaType, caption });
+    return {
+      id,
+      userId,
+      mediaUrl,
+      mediaType,
+      caption,
+      likes: [],
+      comments: [],
+      createdAt: Date.now(), // placeholder until Firestore returns
+    };
   }
 );
 
-export const togglePostLike = createAsyncThunk(
+// Fetch feed
+export const fetchFeed = createAsyncThunk(
+  "posts/fetchFeed",
+  async ({ userId, following }) => {
+    return await getFeedPosts({ userId, following });
+  }
+);
+
+// Toggle like
+export const toggleLike = createAsyncThunk(
   "posts/toggleLike",
-  async ({ postId, uid, isLiked }, { rejectWithValue }) => {
-    try {
-      await toggleLike({ postId, uid, isLiked });
-      return { postId, uid, isLiked };
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
+  async ({ postId, uid, isLiked }) => {
+    await toggleLikeService({ postId, uid, isLiked });
+    return { postId, uid, isLiked };
   }
 );
 
-export const addPostComment = createAsyncThunk(
+// Add comment
+export const addComment = createAsyncThunk(
   "posts/addComment",
-  async ({ postId, uid, text }, { rejectWithValue }) => {
-    try {
-      await addComment({ postId, uid, text });
-      return { postId, uid, text, createdAt: Date.now() };
-    } catch (e) {
-      return rejectWithValue(e.message);
-    }
+  async ({ postId, uid, text }) => {
+    await addCommentService({ postId, uid, text });
+    return { postId, uid, text, createdAt: Date.now() };
   }
 );
 
-const postSlice = createSlice({
+const postsSlice = createSlice({
   name: "posts",
-  initialState: { feed: [], loading: false, error: null },
+  initialState: {
+    feed: [],
+    loading: false,
+    error: null,
+  },
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // Publish
+      .addCase(publishPost.fulfilled, (s, a) => {
+        s.feed = [a.payload, ...s.feed];
+      })
+      // Fetch
       .addCase(fetchFeed.pending, (s) => {
         s.loading = true;
-        s.error = null;
       })
       .addCase(fetchFeed.fulfilled, (s, a) => {
         s.loading = false;
@@ -83,28 +74,29 @@ const postSlice = createSlice({
       })
       .addCase(fetchFeed.rejected, (s, a) => {
         s.loading = false;
-        s.error = a.payload;
+        s.error = a.error.message;
       })
-      .addCase(publishPost.fulfilled, (s, a) => {
-        s.feed = [a.payload, ...s.feed];
-      })
-      .addCase(togglePostLike.fulfilled, (s, a) => {
+      // Likes
+      .addCase(toggleLike.fulfilled, (s, a) => {
         const { postId, uid, isLiked } = a.payload;
-        const p = s.feed.find((p) => p.id === postId);
-        if (!p) return;
-        if (isLiked) {
-          p.likes = p.likes.filter((x) => x !== uid);
-        } else {
-          p.likes = [...p.likes, uid];
+        const post = s.feed.find((p) => p.id === postId);
+        if (post) {
+          if (isLiked) {
+            post.likes = post.likes.filter((id) => id !== uid);
+          } else {
+            post.likes.push(uid);
+          }
         }
       })
-      .addCase(addPostComment.fulfilled, (s, a) => {
+      // Comments
+      .addCase(addComment.fulfilled, (s, a) => {
         const { postId, uid, text, createdAt } = a.payload;
-        const p = s.feed.find((p) => p.id === postId);
-        if (!p) return;
-        p.comments = [...(p.comments || []), { uid, text, createdAt }];
+        const post = s.feed.find((p) => p.id === postId);
+        if (post) {
+          post.comments.push({ uid, text, createdAt });
+        }
       });
   },
 });
 
-export default postSlice.reducer;
+export default postsSlice.reducer;
