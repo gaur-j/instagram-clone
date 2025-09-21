@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // Import async thunks from your slice, NOT service functions
-import { togglePostLike, addPostComment } from "@/redux/postsSlice";
+import { toggleLike, addComment } from "@/redux/postsSlice";
 
 export default function PostCard({ post }) {
   const dispatch = useDispatch();
@@ -12,9 +12,7 @@ export default function PostCard({ post }) {
   const onToggleLike = () => {
     if (!currentUser) return;
     // Dispatch the thunk with expected payload keys (uid, postId, isLiked)
-    dispatch(
-      togglePostLike({ postId: post.id, uid: currentUser.uid, isLiked })
-    );
+    dispatch(toggleLike({ postId: post.id, uid: currentUser.uid, isLiked }));
   };
 
   const onAddComment = (e) => {
@@ -22,7 +20,7 @@ export default function PostCard({ post }) {
     if (!comment.trim() || !currentUser) return;
     // Dispatch the thunk to add comment
     dispatch(
-      addPostComment({
+      addComment({
         postId: post.id,
         uid: currentUser.uid,
         text: comment.trim(),
