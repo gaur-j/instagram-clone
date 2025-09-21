@@ -25,14 +25,9 @@ export const publishPost = createAsyncThunk(
 );
 
 // Fetch feed
-export const fetchFeed = createAsyncThunk(
-  "posts/fetchFeed",
-  async ({ userId, following }) => {
-    const posts = await getFeedPosts({ userId, following });
-    console.log("Fetched posts:", posts); // debug
-    return posts;
-  }
-);
+export const fetchFeed = createAsyncThunk("posts/fetchFeed", async () => {
+  return await getFeedPosts();
+});
 
 // Toggle like
 export const toggleLike = createAsyncThunk(

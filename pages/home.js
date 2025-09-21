@@ -13,10 +13,8 @@ export default function HomePage() {
 
   // Fetch feed on user load
   useEffect(() => {
-    if (!currentUser) return;
-    const following = currentUser.following || [];
-    dispatch(fetchFeed({ userId: currentUser.uid, following }));
-  }, [currentUser, dispatch]);
+    dispatch(fetchFeed());
+  }, [dispatch]);
 
   if (userLoading) return <div className="p-6">Loading user...</div>;
   if (!currentUser) return <div className="p-6">Please log in.</div>;
