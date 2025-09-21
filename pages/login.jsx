@@ -7,8 +7,8 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import Image from "next/image";
-import insta from "../assest/instagram-logo.png"; // Adjust the path as necessary
-import landing from "../assest/landing.png";
+import insta from "../assets/instagram-logo.png"; // Adjust the path as necessary
+import landing from "../assets/landing.png";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { Firestore } from "firebase/firestore";
 

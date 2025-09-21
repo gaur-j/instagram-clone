@@ -4,14 +4,14 @@ import { fetchFeed } from "../redux/postsSlice";
 import PostCard from "../components/PostCard";
 import PostComposer from "../components/PostComposer";
 import Image from "next/image";
-import defaultAvatar from "../assest/default.png";
+import defaultAvatar from "../assets/default.png"; // ✅ fixed folder name
 
 export default function HomePage() {
   const dispatch = useDispatch();
   const { currentUser, loading: userLoading } = useSelector((s) => s.user);
   const { feed, loading: feedLoading } = useSelector((s) => s.posts);
 
-  // Fetch feed on user load
+  // ✅ Fetch ALL posts once on mount
   useEffect(() => {
     dispatch(fetchFeed());
   }, [dispatch]);
@@ -83,13 +83,11 @@ export default function HomePage() {
         <div className="space-y-6">
           {!feedLoading && feed.length === 0 && (
             <p className="text-gray-400 text-center">
-              No posts yet. Follow someone or create your first post!
+              No posts yet. Create your first post!
             </p>
           )}
           {!feedLoading &&
-            feed
-              .filter((post) => post && post.id)
-              .map((post) => <PostCard key={post.id} post={post} />)}
+            feed.map((post) => <PostCard key={post.id} post={post} />)}
         </div>
       </main>
 
